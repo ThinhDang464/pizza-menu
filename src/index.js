@@ -2,6 +2,8 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import "./index.css";
 //data
+
+//render list: we have an array of data and for each pieve of object we want to automatically create a pizza
 const pizzaData = [
   {
     name: "Focaccia",
@@ -70,11 +72,28 @@ function Header() {
 }
 
 function Menu() {
+  const pizzas = pizzaData;
+  const numPizzas = pizzas.length;
   // we can pass props from menu to pizza, from parent to child
   return (
     <main className="menu">
       <h2>Our menu</h2>
-      <Pizza
+      {numPizzas > 0 ? ( //conditional rendering if there 0 on the left side of && then react will render the 0 of num pizzas and not the ul. React does not render true or false but will render 0
+        <>
+          {/*react fragment use react fragment when we want two elements without parent element in React */}
+          <p>Authentic Italian cuisine. 6 creative dishes to choose from.</p>
+          <ul className="pizzas">
+            {pizzas.map((pizza) => (
+              //we should add key for each object as props
+              <Pizza pizzaObj={pizza} key={pizza.name} /> //we can pass the current pizza object as props and then use it instead of individual props
+            ))}
+          </ul>
+        </>
+      ) : (
+        <p>We're still working on our menu, Please come back later</p>
+      )}
+
+      {/* <Pizza
         name="Pizza Spinaci"
         ingredient="Tomato, mozarella, spinach, and ricotta cheese"
         photoName="pizzas/spinaci.jpg"
@@ -93,23 +112,35 @@ function Menu() {
         ingredient="Tomato, mozarella, spinach, and ricotta cheese"
         photoName="pizzas/spinaci.jpg"
         price={10} //number instead of string, pass in aanything like array oir obj using {}
-      />
+      /> */}
     </main>
   );
 }
 
-function Pizza(props) {
-  console.log(props);
+function Pizza({ pizzaObj }) {
+  //pass pizaobj as props directly
+  console.log(pizzaObj);
   //write comp as pizza -> need to return some markup
+
+  //we use early return with if when we want to return null
+  //if (pizzaObj.soldOut) return null; //pizza with sold out prop will not be rendered like other
   return (
-    <div className="pizza">
-      <img src={props.photoName} alt={props.name} />
+    <li className={`pizza ${pizzaObj.soldOut ? "sold-out" : ""}`}>
+      {/*class name is pizza when soldout is false and class name is pizza sold-out if true */}
+      <img src={pizzaObj.photoName} alt={pizzaObj.name} />
       <div>
-        <h3>{props.name}</h3>
-        <p>{props.ingredient}</p>
-        <span>{props.price + 1}</span>
+        <h3>{pizzaObj.name}</h3>
+        <p>{pizzaObj.ingredients}</p>
+        <span>{pizzaObj.soldOut ? "SOLD OUT" : pizzaObj.price + 1}</span>{" "}
+        {/* first way of
+        doing the conditional redering with ternary, we know it will be a span second way below*/}
+        {/* {pizzaObj.soldOut ? (
+          <span>SOLD OUT</span>
+        ) : (
+          <span>{pizzaObj.price}</span>
+        )} */}
       </div>
-    </div>
+    </li>
   );
 }
 
@@ -118,17 +149,26 @@ const Footer = () => {
   const openHour = 12;
   const closeHour = 22;
   const isOpen = hour >= openHour && hour <= closeHour;
+  console.log(isOpen);
 
   //   if (hour >= openHour && hour <= closeHour) {
   //     alert("We're currently open!");
   //   } else {
   //     alert("Sorry we're closed!");
   //   }
+
+  // if (!isOpen) {
+  //   return <p>We are happy to welcome you during opening time</p>; //we are no longer render the footer element around this
+  // }
   return (
     <footer className="footer">
-      {new Date().toLocaleTimeString()} We're currently open
+      {isOpen ? (
+        <Order openHour={openHour} closeHour={closeHour} /> //need to send the close hours down
+      ) : (
+        <p>We are happy to welcome you during opening time</p>
+      )}
     </footer>
-  );
+  ); //ig isOpen is falsy or one value is falsy js will not look at the operation
 };
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
@@ -137,3 +177,15 @@ root.render(
     <App />
   </React.StrictMode>
 ); //strict mode render comp twice to find bug
+
+function Order({ openHour, closeHour }) {
+  return (
+    <div className="order">
+      <p>
+        We're open from {openHour}:00 pm to {closeHour}:00 pm. Come visit us or
+        order online.
+      </p>
+      <button className="btn">Order</button>
+    </div>
+  );
+}
